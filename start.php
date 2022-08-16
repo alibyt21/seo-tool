@@ -47,8 +47,10 @@ class Search{
                 $mainQueryIndex = array_search(self::$data[self::$startPos][self::$i],self::$data[0]);
                 if ($mainQueryIndex){
                     $difference = self::$i-$mainQueryIndex;
-                    self::$score += 10 - abs($difference);
-                    self::$data[self::$startPos][20] = self::$score;
+                    $score = 10 - abs($difference);
+                    $weightedScore = $score * ((20 - (($mainQueryIndex-1)*2.2222222))/10);
+                    self::$score += $weightedScore;
+                    self::$data[self::$startPos][20] = (int)self::$score;
                 }
                 
             }
