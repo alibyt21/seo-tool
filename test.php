@@ -1,5 +1,5 @@
 <?php
-/*
+
 include_once 'vendor/autoload.php';
 use Goutte\Client;
 $client = new Client();
@@ -15,11 +15,7 @@ $crawler->filter('.egMi0 > a')->each(function ($node){
 
 });
 
-//var_dump($crawler->html());
+var_dump($crawler->html());
 
-*/
-$test = array();
-$test[0][2] = 20;
-echo "<pre>";
-var_dump($test);
-echo "</pre>";
+
+

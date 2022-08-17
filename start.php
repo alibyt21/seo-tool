@@ -1,4 +1,16 @@
 <?php
+error_reporting(E_ALL ^ E_NOTICE);
+
+function in_array_r($needle, $haystack, $strict = false) {
+    foreach ($haystack as $item) {
+        if (($strict ? $item === $needle : $item == $needle) || (is_array($item) && in_array_r($needle, $item, $strict))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 include_once 'vendor/autoload.php';
 use Goutte\Client;
 
@@ -22,7 +34,7 @@ class Search{
         $client = new Client();
         self::$i = 0;
         $currentQuery = self::$data[self::$startPos][0];
-        $crawler = $client->request('GET', "https://www.google.com/search?q={$currentQuery}");
+        $crawler = $client->request('GET', "https://www.google.com/search?q={$currentQuery}&rlz=1C1RXQR_enIR944IR944&oq={$currentQuery}&aqs=chrome.0.69i59l2j69i57j0i271l2j69i60l3.600j0j7&sourceid=chrome&ie=UTF-8");
         self::$score = 0;
         /*get results url*/
         $crawler->filter('.egMi0 > a')->each(function ($node){
@@ -45,17 +57,21 @@ class Search{
 
             if(self::$startPos >= 1){
                 $mainQueryIndex = array_search(self::$data[self::$startPos][self::$i],self::$data[0]);
+                
                 if ($mainQueryIndex){
                     $difference = self::$i-$mainQueryIndex;
                     $score = 10 - abs($difference);
-                    $weightedScore = $score * ((20 - (($mainQueryIndex-1)*2.2222222))/10);
+                    $weightedScore = $score * ((20 - (($mainQueryIndex-1)*2))/10);
                     self::$score += $weightedScore;
-                    self::$data[self::$startPos][20] = (int)self::$score;
-                }
+                }else{
+                    self::$score += 0;
+                } 
+                self::$data[self::$startPos][20] = (string)(int)self::$score;
                 
-            }
-
+            } 
+            
         });
+ 
         self::$i = 0;
         self::$score = 0;
 
@@ -65,7 +81,8 @@ class Search{
             // echo "<pre>";
             // var_dump($next);
             // echo "<pre>";
-            if(!is_null($next) && !in_array($next,self::$data)){
+            if(!is_null($next) && !in_array_r($next,self::$data)){
+                //echo '</br>HTHWETWJSDFSMFNXL@#@#%#@%@#!~</br></br>';
                 self::$data[self::$endPos][0] = $next;
                 self::$endPos++;
             }else{
@@ -77,7 +94,7 @@ class Search{
 
     public function search()
     {
-        while(self::$endPos-self::$startPos <= 100){
+        while(self::$endPos-self::$startPos <= 500){
             $this->singleSearch();
             self::$startPos++;
             sleep(rand(0,2));
@@ -91,20 +108,23 @@ class Search{
 
 }
 
-$test = new search('ثبت نام اینستاگرام');
+$test = new search('سیستم مدیریت محتوا چیست');
 $test->search();
 
 
 $resilt = $test->getRelatedQueries();
-echo "<pre>";
-var_dump($resilt);
-echo "</pre>";
+// echo "<pre>";
+// var_dump($resilt);
+// echo "</pre>";
 
 foreach($resilt as $row){
-    echo "<pre>";
-    var_dump($row[0]."          score:".$row[20]);
-    echo "</pre>";
+    if(is_string($row[20])){
+        echo ($row[0].",".$row[20]);
+        echo "</br>";
+    }
 }
+
+
 
 /*
 foreach ($test->getRelatedQueries() as $value) {
